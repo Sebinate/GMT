@@ -6,3 +6,6 @@ nltk
 transformers
 scikit-learn
 torch
+dotenv
+google-genai
+openai
