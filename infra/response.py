@@ -29,7 +29,10 @@ class Inference:
         )
 
         #para to sa mga none shi
-        return response.text.strip() if response.text else "[REFUSED]"
+        try:
+            return response.text.strip() if response.text else "[REFUSED]"
+        except Exception:
+            return "[REFUSED]"
 
     def call_qwen(self, prompt: str) -> str:
         response = self.qwen_client.chat.completions.create(
@@ -42,7 +45,7 @@ class Inference:
         # Ensuring against nonetype responses
         content = response.choices[0].message.content
 
-        return content.strip() if content else "[REFUSED]"
+        return content.strip() if content != None else "[REFUSED]"
 
     def generate_responses(self, df: pd.DataFrame):
         rows = []

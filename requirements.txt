@@ -10,3 +10,9 @@ dotenv
 google-genai
 openai
 streamlit
+torchvision
+sentencepiece
+protobuf
+tokenizers
+accelerate
+sacremoses

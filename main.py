@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from infra.reader import reader
 from infra.translator import Translator
 from infra.response import Inference
-from infra.voting import LlamaJudge, SEAGuardClassifier
+from infra.voting import LlamaJudge, SEAGuardClassifier, get_verdict
 from utils.utils import save_file
 
 load_dotenv()
@@ -16,6 +16,7 @@ load_dotenv()
 # ================================================================
 groq_token = os.getenv('groq_token')
 gemini_token = os.getenv('gemini_token')
+sealion_token = os.getenv('sealion_token')
 
 LANGUAGES = {
     "tagalog": "Helsinki-NLP/opus-mt-en-tl",
@@ -49,14 +50,18 @@ if file_source and uploaded_file:
                        qwen_model = "qwen/qwen3-32b").\
                         generate_responses(le_translator)
     
-    seaguard = SEAGuardClassifier().classify_dataframe(inferencer)
+    seaguard = SEAGuardClassifier(api_key = sealion_token).classify_dataframe(inferencer)
     
     judge = LlamaJudge(groq_token = groq_token).classify_dataframe(seaguard)
     
     st.subheader('Annotated Data')
+    
+    judge['verdict_gemini'] = judge.apply(lambda row: get_verdict(row, 'gemini'), axis=1)
+    judge['verdict_qwen'] = judge.apply(lambda row: get_verdict(row, 'qwen'), axis=1)
+    
     st.dataframe(judge.head(10), use_container_width = True)
     
-    judge.to_csv(index=False).encode('utf-8')
+    final = judge.to_csv(index=False).encode('utf-8')
     
-    st.download_button(label = 'Download Annotated Data', data = judge,
+    st.download_button(label = 'Download Annotated Data', data = final,
                        file_name = 'annotated_data.csv', mime = 'text/csv')
